@@ -1,23 +1,26 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
-import FieldRenderer from './FieldRenderer';
-import type { SchemaType } from '../schema/page';
-import { fetchFormData } from '../lib/db';
+import React, { useState, ChangeEvent, FormEvent } from "react";
+import FieldRenderer from "./FieldRenderer";
+import type { SchemaType } from "../schema/page";
+import { persistFormState } from "../lib/api";
+import { useLocalFormState } from "../hooks/useLocalFormState";
 
 interface FormProps {
   schema: SchemaType;
+  data: FormState;
 }
 
 export type FormState = { [key: string]: any };
 
-const Form: React.FC<FormProps> = ({ schema }) => {
-  const [formData, setFormData] = useState<FormState>({});
+const Form: React.FC<FormProps> = ({ schema, data }) => {
+  const [formData, setFormData] = useState<FormState>(data);
+  const { setLocalFormState } = useLocalFormState(data);
 
   const handleInputChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value, type } = event.target;
     const fieldValue =
-      type === 'checkbox' ? (event.target as HTMLInputElement).checked : value;
+      type === "checkbox" ? (event.target as HTMLInputElement).checked : value;
 
     setFormData((prevData) => ({
       ...prevData,
@@ -25,18 +28,20 @@ const Form: React.FC<FormProps> = ({ schema }) => {
     }));
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const promises = Object.keys(formData).map(fetchFormData);
-      await Promise.all(promises);
+      await persistFormState(formData);
+      alert("Form Saved!");
     } catch (e) {
       console.error(e);
+      alert("Redis is down but don't worry, your form is saved locally");
+    } finally {
+      setLocalFormState(formData);
     }
   };
 
   return (
-    // TODO-1: Form should submit this information
     <form className="space-y-8" onSubmit={handleSubmit}>
       {Object.keys(schema.properties).map((fieldName) => (
         <FieldRenderer
@@ -45,6 +50,7 @@ const Form: React.FC<FormProps> = ({ schema }) => {
           schema={schema}
           handleInputChange={handleInputChange}
           formData={formData}
+          defaultValue={data[fieldName]}
         />
       ))}
       <div>

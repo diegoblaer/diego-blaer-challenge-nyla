@@ -1,35 +1,37 @@
 export default {
-  $schema: 'http://json-schema.org/draft-07/schema#',
-  type: 'object',
+  $schema: "http://json-schema.org/draft-07/schema#",
+  type: "object",
   properties: {
     heading: {
-      title: 'Heading',
-      type: 'string',
-      placeholder: 'This is a custom placeholder',
+      title: "Heading",
+      type: "string",
+      placeholder: "This is a custom placeholder",
     },
     description: {
-      title: 'Description',
-      type: 'string',
+      title: "Description",
+      type: "string",
     },
     primaryButtonText: {
-      title: 'Primary Button Text',
-      type: 'string',
+      title: "Primary Button Text",
+      type: "string",
     },
     secondaryButtonText: {
-      title: 'Secondary Button Text',
-      type: 'string',
+      title: "Secondary Button Text",
+      type: "string",
     },
     truncateDescription: {
-      title: 'Truncate Description',
-      type: 'boolean',
-      renderConditions: { minLength: { value: 5, target: 'description' } },
+      title: "Truncate Description",
+      type: "boolean",
+      renderConditions: {
+        minLength: { value: 5, target: "description" },
+      },
     },
   },
   required: [
-    'heading',
-    'description',
-    'primaryButtonText',
-    'secondaryButtonText',
+    "heading",
+    "description",
+    "primaryButtonText",
+    "secondaryButtonText",
   ],
 };
 
@@ -53,4 +55,8 @@ type MinLengthCondition = {
   };
 };
 
-export type RenderConditions = MinLengthCondition;
+type FirstWeekOfMonthCondition = {
+  showOnlyOnFirstWeek?: boolean;
+};
+
+export type RenderConditions = MinLengthCondition & FirstWeekOfMonthCondition;

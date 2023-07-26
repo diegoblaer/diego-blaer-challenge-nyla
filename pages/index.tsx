@@ -1,10 +1,13 @@
-import React from 'react';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
+import Form, { FormState } from "../components/Form";
+import schema from "../schema/page";
+import { fetchRedisFormState } from "../lib/db";
+import { useLocalFormState } from "../hooks/useLocalFormState";
 
-import Form from '../components/Form';
-import schema from '../schema/page';
-
-const App: React.FC = () => {
+const App: React.FC<{ data: FormState | null }> = ({ data }) => {
+  const { localFormState } = useLocalFormState(data);
+  const formData = data ?? localFormState;
   return (
     <div className="w-full mx-auto">
       <div className="px-4 sm:px-6 py-4 sm:py-6 mb-12 bg-gray-100">
@@ -21,10 +24,27 @@ const App: React.FC = () => {
         </div>
       </div>
       <div className="px-4 sm:px-6">
-        <Form schema={schema} />
+        <Form schema={schema} data={formData} />
       </div>
     </div>
   );
 };
+
+export async function getStaticProps() {
+  try {
+    const data = await fetchRedisFormState();
+    return {
+      props: {
+        data,
+      },
+    };
+  } catch (e) {
+    return {
+      props: {
+        data: null,
+      },
+    };
+  }
+}
 
 export default App;
